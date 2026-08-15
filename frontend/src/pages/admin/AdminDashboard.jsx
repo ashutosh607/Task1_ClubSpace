@@ -579,9 +579,17 @@ const AdminDashboard = () => {
                   >
                     <div>
                       <div className="flex items-center justify-between mb-4">
-                        <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 border border-white/20 text-white">
-                          {club.category}
-                        </span>
+                        {club.logo ? (
+                          <img
+                            src={club.logo}
+                            alt={club.name}
+                            className="w-12 h-12 rounded-2xl object-cover border border-white/20 shadow-md bg-black shrink-0"
+                          />
+                        ) : (
+                          <span className="px-2.5 py-1 rounded-full text-[10px] font-bold bg-white/10 border border-white/20 text-white">
+                            {club.category}
+                          </span>
+                        )}
                         <span className="text-xs font-semibold text-white flex items-center gap-1">
                           <CheckCircle2 className="w-3.5 h-3.5" /> {club.status}
                         </span>

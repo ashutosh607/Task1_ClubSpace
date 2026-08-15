@@ -244,7 +244,9 @@ export default function ClubGlobe({ clubs = [], onSelectClub, onAddClubClick, se
             Cosmic Matrix Ready
           </h3>
           <p className="text-xs text-zinc-400 leading-relaxed">
-            No campus clubs have been registered yet. Add your organization to launch its 3D orbital node.
+            {onAddClubClick
+              ? "No campus clubs have been registered yet. Add your organization to launch its 3D orbital node."
+              : "No campus clubs are currently in orbit. Organization nodes will appear here once registered by administrators."}
           </p>
           {onAddClubClick && (
             <button

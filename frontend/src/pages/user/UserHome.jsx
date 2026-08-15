@@ -322,7 +322,7 @@ export default function UserHome() {
           <ClubGlobe
             clubs={clubs}
             onSelectClub={(club) => setSelectedClub(club)}
-            onAddClubClick={() => setIsAddClubOpen(true)}
+            onAddClubClick={user?.role === "admin" ? () => setIsAddClubOpen(true) : null}
             selectedClubId={selectedClub?._id || selectedClub?.id}
           />
         </motion.div>
@@ -531,17 +531,29 @@ export default function UserHome() {
               <Inbox className="w-12 h-12 mx-auto stroke-1 text-zinc-600" />
               <h3 className="text-base font-bold text-white">No Matching Clubs Found</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                No clubs match your current search or category filter. Try clearing your filters or create a new organization node.
+                {user?.role === "admin"
+                  ? "No clubs match your current search or category filter. Try clearing your filters or create a new organization node."
+                  : "No campus clubs match your current filters. Organization nodes will appear once registered by campus administrators."}
               </p>
-              <button
-                onClick={() => {
-                  setClubCategory("All Clubs");
-                  setClubSearch("");
-                }}
-                className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
-              >
-                Reset Filters
-              </button>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <button
+                  onClick={() => {
+                    setClubCategory("All Clubs");
+                    setClubSearch("");
+                  }}
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
+                >
+                  Reset Filters
+                </button>
+                {user?.role === "admin" && (
+                  <button
+                    onClick={() => setIsAddClubOpen(true)}
+                    className="inline-flex items-center gap-2 bg-white text-black font-bold text-xs px-4 py-2.5 rounded-xl shadow-lg hover:bg-zinc-200 transition-all cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" /> Register New Club
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -560,11 +572,19 @@ export default function UserHome() {
                     className="group bg-[#09090e]/90 hover:bg-[#12121a] border border-white/10 hover:border-white/30 rounded-3xl p-6 backdrop-blur-xl transition-all duration-300 flex flex-col justify-between shadow-xl"
                   >
                     <div>
-                      {/* Top Badges */}
+                      {/* Top Badges & Logo */}
                       <div className="flex items-center justify-between mb-4">
-                        <div className="w-11 h-11 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center shadow-md">
-                          {getCategoryIcon(club.category)}
-                        </div>
+                        {club.logo ? (
+                          <img
+                            src={club.logo}
+                            alt={club.name}
+                            className="w-12 h-12 rounded-2xl object-cover border border-white/20 shadow-md bg-black/60 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center shadow-md shrink-0">
+                            {getCategoryIcon(club.category)}
+                          </div>
+                        )}
                         <span className="px-3 py-1 rounded-full text-[9px] font-bold tracking-[0.15em] bg-white/5 border border-white/10 text-zinc-300 uppercase">
                           {club.category || "GENERAL"}
                         </span>
@@ -677,6 +697,7 @@ export default function UserHome() {
                 >
                   <option value="All">All Categories</option>
                   <option value="General">General</option>
+                  <option value="Technical">Technical</option>
                   <option value="Hackathon">Hackathon</option>
                   <option value="Workshop">Workshop</option>
                   <option value="Cultural">Cultural</option>
@@ -692,16 +713,30 @@ export default function UserHome() {
               <Calendar className="w-12 h-12 mx-auto stroke-1 text-zinc-600" />
               <h3 className="text-base font-bold text-white">No Active Missions Found</h3>
               <p className="text-xs text-zinc-500 max-w-sm mx-auto">
-                No events currently match your filters. Check back soon or dispatch an event using the flight control desk.
+                {user?.role === "admin"
+                  ? "No events currently match your filters. Check back soon or dispatch an event using the flight control desk."
+                  : "No events match your current filters. Upcoming events and activities will appear here once published by administrators."}
               </p>
-              {user?.role === "admin" && (
+              <div className="flex flex-wrap items-center justify-center gap-3">
                 <button
-                  onClick={() => setIsAddEventOpen(true)}
-                  className="inline-flex items-center gap-2 bg-white text-black font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
+                  onClick={() => {
+                    setEventTimeFilter("All");
+                    setEventCategoryFilter("All");
+                    setEventSearch("");
+                  }}
+                  className="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer"
                 >
-                  <Plus className="w-4 h-4" /> Create Campus Event
+                  Reset Filters
                 </button>
-              )}
+                {user?.role === "admin" && (
+                  <button
+                    onClick={() => setIsAddEventOpen(true)}
+                    className="inline-flex items-center gap-2 bg-white text-black font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer shadow-lg hover:bg-zinc-200 transition-all"
+                  >
+                    <Plus className="w-4 h-4" /> Create Campus Event
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -715,18 +750,28 @@ export default function UserHome() {
                   className="group bg-[#09090e]/90 hover:bg-[#12121a] border border-white/10 hover:border-white/30 rounded-3xl overflow-hidden backdrop-blur-xl transition-all duration-300 flex flex-col justify-between shadow-xl"
                 >
                   <div>
-                    {/* Header Cosmic Banner */}
-                    <div className="relative h-44 bg-gradient-to-br from-zinc-800/80 via-zinc-900 to-black border-b border-white/10 p-5 flex flex-col justify-between">
-                      <div className="flex items-center justify-between">
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-white/10 border border-white/20 text-white backdrop-blur-md">
+                    {/* Header Cosmic Banner / Photo */}
+                    <div className="relative h-48 bg-gradient-to-br from-zinc-800/80 via-zinc-900 to-black border-b border-white/10 p-5 flex flex-col justify-between overflow-hidden">
+                      {evt.image && (
+                        <>
+                          <img
+                            src={evt.image}
+                            alt={evt.title}
+                            className="w-full h-full object-cover absolute inset-0 transition-transform duration-500 group-hover:scale-105"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-[#09090e] via-[#09090e]/60 to-black/40" />
+                        </>
+                      )}
+                      <div className="relative z-10 flex items-center justify-between">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-black/60 border border-white/20 text-white backdrop-blur-md">
                           {evt.category || "General"}
                         </span>
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 uppercase tracking-wider">
+                        <span className="px-3 py-1 rounded-full text-[10px] font-bold bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 uppercase tracking-wider backdrop-blur-md">
                           {evt.status || "Open"}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 text-[11px] text-zinc-300 font-mono">
-                        <Orbit className="w-3.5 h-3.5 text-zinc-400" />
+                      <div className="relative z-10 flex items-center gap-2 text-[11px] text-zinc-200 font-mono drop-shadow">
+                        <Orbit className="w-3.5 h-3.5 text-zinc-300" />
                         <span>HOST: {evt.club}</span>
                       </div>
                     </div>

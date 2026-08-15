@@ -26,6 +26,10 @@ const ClubSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    logo: {
+      type: String,
+      default: "",
+    },
     status: {
       type: String,
       enum: ["Active", "Pending", "Inactive"],

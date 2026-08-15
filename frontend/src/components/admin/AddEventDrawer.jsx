@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
 import { addAdminEvent } from "../../store/admin-slice";
-import { X, Loader2, Orbit } from "lucide-react";
+import { X, Loader2, Orbit, Upload, Image, Trash2 } from "lucide-react";
 
 const AddEventDrawer = ({ isOpen, onClose }) => {
   const dispatch = useDispatch();
@@ -16,6 +16,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
     capacity: 50,
     status: "Open",
     description: "",
+    image: "",
   });
 
   const handleChange = (e) => {
@@ -23,6 +24,33 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  // Handle Event Photo Upload as Base64 Data URL
+  const handlePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size should be less than 5MB");
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setFormData((prev) => ({
+        ...prev,
+        image: reader.result,
+      }));
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const removePhoto = () => {
+    setFormData((prev) => ({
+      ...prev,
+      image: "",
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -42,6 +70,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
         capacity: 50,
         status: "Open",
         description: "",
+        image: "",
       });
       onClose();
     } catch (err) {
@@ -75,13 +104,13 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
                     Create New Event
                   </h2>
                   <p className="text-xs text-zinc-400">
-                    Publish an event to the campus portal.
+                    Publish an event to the campus portal (Admin).
                   </p>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-all"
+                className="p-2 rounded-xl text-zinc-400 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -102,6 +131,63 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
                   required
                   className="w-full bg-[#18181b] border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-white/40 transition-all"
                 />
+              </div>
+
+              {/* Event Photo / Banner Upload */}
+              <div>
+                <label className="block text-[10px] font-bold tracking-[0.15em] text-zinc-400 uppercase mb-1">
+                  EVENT PHOTO / BANNER
+                </label>
+                
+                {formData.image ? (
+                  <div className="relative group/img w-full p-3 bg-[#18181b] border border-white/15 rounded-xl flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={formData.image}
+                        alt="Event Banner Preview"
+                        className="w-16 h-12 rounded-lg object-cover border border-white/20 shadow-md bg-black"
+                      />
+                      <div className="text-xs">
+                        <p className="font-semibold text-white">Photo Uploaded</p>
+                        <p className="text-[10px] text-zinc-400">Fits into event header card</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={removePhoto}
+                      className="p-2 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
+                      title="Remove Photo"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <label className="border-2 border-dashed border-white/15 hover:border-white/40 rounded-xl p-4 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all bg-white/[0.02] hover:bg-white/[0.04]">
+                      <Upload className="w-5 h-5 text-zinc-400" />
+                      <span className="text-xs text-zinc-300 font-medium">Click to upload event photo</span>
+                      <span className="text-[10px] text-zinc-500 font-mono">PNG, JPG, WEBP (Max 5MB)</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                      />
+                    </label>
+
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-zinc-500 uppercase">Or image URL:</span>
+                      <input
+                        type="url"
+                        name="image"
+                        value={formData.image}
+                        onChange={handleChange}
+                        placeholder="https://example.com/banner.jpg"
+                        className="flex-1 bg-[#18181b] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white/30"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -128,7 +214,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
                     name="category"
                     value={formData.category}
                     onChange={handleChange}
-                    className="w-full bg-[#18181b] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-all"
+                    className="w-full bg-[#18181b] border border-white/10 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-all cursor-pointer"
                   >
                     <option value="Technical">Technical</option>
                     <option value="Cultural">Cultural</option>
@@ -193,7 +279,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
                   name="status"
                   value={formData.status}
                   onChange={handleChange}
-                  className="w-full bg-[#18181b] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-all"
+                  className="w-full bg-[#18181b] border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:border-white/40 transition-all cursor-pointer"
                 >
                   <option value="Open">Open</option>
                   <option value="Waitlist">Waitlist</option>
@@ -223,7 +309,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 bg-white/5 hover:bg-white/10 text-white font-medium py-2.5 rounded-xl text-xs transition-all"
+              className="flex-1 bg-white/5 hover:bg-white/10 text-white font-medium py-2.5 rounded-xl text-xs transition-all cursor-pointer"
             >
               Cancel
             </button>
@@ -231,7 +317,7 @@ const AddEventDrawer = ({ isOpen, onClose }) => {
               type="submit"
               form="add-event-form"
               disabled={loading}
-              className="flex-1 bg-white hover:bg-zinc-200 text-black font-semibold py-2.5 rounded-xl text-xs shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-1 bg-white hover:bg-zinc-200 text-black font-semibold py-2.5 rounded-xl text-xs shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
             >
               {loading ? (
                 <>

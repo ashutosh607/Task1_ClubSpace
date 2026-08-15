@@ -28,9 +28,17 @@ export default function ClubDetailsModal({ club, events = [], onClose, onSelectE
             
             {/* Club Identity Header */}
             <div className="flex items-start gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center text-2xl font-black shrink-0 shadow-lg">
-                {club.name ? club.name.charAt(0).toUpperCase() : "C"}
-              </div>
+              {club.logo ? (
+                <img
+                  src={club.logo}
+                  alt={club.name}
+                  className="w-16 h-16 rounded-2xl object-cover border border-white/20 shrink-0 shadow-lg bg-black/50"
+                />
+              ) : (
+                <div className="w-16 h-16 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center text-2xl font-black shrink-0 shadow-lg">
+                  {club.name ? club.name.charAt(0).toUpperCase() : "C"}
+                </div>
+              )}
 
               <div>
                 <span className="text-[10px] font-bold tracking-[0.2em] text-zinc-400 uppercase">

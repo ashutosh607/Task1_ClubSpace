@@ -68,7 +68,7 @@ const getClubs = async (req, res) => {
 
 const createClub = async (req, res) => {
   try {
-    const { name, category, leadName, email, description } = req.body;
+    const { name, category, leadName, email, description, logo } = req.body;
     if (!name || !category || !leadName || !email) {
       return res.status(400).json({
         success: false,
@@ -82,6 +82,7 @@ const createClub = async (req, res) => {
       leadName,
       email,
       description: description || "",
+      logo: logo || "",
       status: "Active",
     });
 
