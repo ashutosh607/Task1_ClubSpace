@@ -22,10 +22,22 @@ const createEvent = async (req, res) => {
       });
     }
 
+    // Verify hosting club exists on the platform
+    const existingClub = await Club.findOne({
+      name: { $regex: new RegExp(`^${club.trim()}$`, "i") },
+    });
+
+    if (!existingClub) {
+      return res.status(400).json({
+        success: false,
+        message: `Club "${club}" is not registered on the platform. Please select a valid campus club.`,
+      });
+    }
+
     const newEvent = new Event({
       title,
-      club,
-      category: category || "General",
+      club: existingClub.name, // Use canonical registered name
+      category: category || existingClub.category || "General",
       date,
       venue,
       capacity: Number(capacity) || 50,

@@ -109,6 +109,7 @@ const AdminDashboard = () => {
       <AddEventDrawer
         isOpen={isEventDrawerOpen}
         onClose={() => setIsEventDrawerOpen(false)}
+        onOpenAddClub={() => setIsClubDrawerOpen(true)}
       />
 
       {/* Slide-over Club Drawer */}

@@ -991,6 +991,7 @@ export default function UserHome() {
           setIsAddEventOpen(false);
           dispatch(fetchPublicEvents());
         }}
+        onOpenAddClub={() => setIsAddClubOpen(true)}
       />
 
     </div>
