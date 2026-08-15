@@ -47,6 +47,10 @@ app.use("/api/auth", authRouter);
 const adminRouter = require("./routes/admin/admin-routes");
 app.use("/api/admin", adminRouter);
 
+const userRouter = require("./routes/user/user-routes");
+app.use("/api/user", userRouter);
+
+
 
 
 app.use((err, req, res, next) => {

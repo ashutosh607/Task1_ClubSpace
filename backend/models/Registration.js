@@ -22,9 +22,33 @@ const RegistrationSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    eventId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Event",
+    },
     registrationDate: {
       type: String,
       required: true,
+    },
+    phone: {
+      type: String,
+      default: "",
+    },
+    collegeId: {
+      type: String,
+      default: "",
+    },
+    year: {
+      type: String,
+      default: "",
+    },
+    department: {
+      type: String,
+      default: "",
+    },
+    answers: {
+      type: String,
+      default: "",
     },
     status: {
       type: String,
@@ -36,3 +60,4 @@ const RegistrationSchema = new mongoose.Schema(
 );
 
 module.exports = mongoose.model("Registration", RegistrationSchema);
+
