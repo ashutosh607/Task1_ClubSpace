@@ -21,9 +21,32 @@ mongoose
     console.error("MongoDB Connection Error:", error.message);
   });
 
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cache-Control",
+      "Expires",
+      "Pragma",
+    ],
+  })
+);
+
+
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+const authRouter = require("./routes/auth/auth-routes");
+app.use("/api/auth", authRouter);
+
+const adminRouter = require("./routes/admin/admin-routes");
+app.use("/api/admin", adminRouter);
+
 
 
 app.use((err, req, res, next) => {

@@ -122,9 +122,39 @@
     @apply border-border outline-ring/50;
     }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-[#09090b] text-foreground min-h-screen selection:bg-white/20 selection:text-white;
     }
   html {
     @apply font-sans;
     }
+}
+
+
+@keyframes spaceFloat {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(0.4deg);
+  }
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.animate-space-float {
+  animation: spaceFloat 6s ease-in-out infinite;
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 25px -5px rgba(255, 255, 255, 0.04), 0 0 40px -10px rgba(255, 255, 255, 0.08);
+  }
+  50% {
+    box-shadow: 0 0 35px -5px rgba(255, 255, 255, 0.08), 0 0 55px -5px rgba(255, 255, 255, 0.12);
+  }
+}
+
+.space-card-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
 }
