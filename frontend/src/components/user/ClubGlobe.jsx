@@ -19,17 +19,52 @@ function getSpherePosition(index, total, radius = 3.35) {
 function DynamicClubNode({ club, position, onSelect, isSelected }) {
   const [hovered, setHovered] = useState(false);
   const nodeRef = useRef();
+  const groupRef = useRef();
+  const htmlWrapperRef = useRef(null);
+  // Stable pre-allocated vector + visibility ref (no stale closure issues)
+  const _worldPos = useRef(new THREE.Vector3());
+  const visibleRef = useRef(true);
 
   useFrame((state) => {
-    if (nodeRef.current && (hovered || isSelected)) {
+    if (!groupRef.current) return;
+
+    // Get world position of this node in world space
+    groupRef.current.getWorldPosition(_worldPos.current);
+
+    // Dot product of node world position and camera position vectors (both from origin)
+    // Positive = node faces camera, negative = behind the globe
+    const camLen = state.camera.position.length();
+    const nodeLen = _worldPos.current.length();
+    const camDot = camLen > 0 && nodeLen > 0
+      ? _worldPos.current.dot(state.camera.position) / (camLen * nodeLen)
+      : 1;
+
+    // Threshold: hide when dot < -0.1 (safely behind the sphere surface)
+    const nowVisible = camDot > -0.1;
+
+    if (nowVisible !== visibleRef.current) {
+      visibleRef.current = nowVisible;
+      // Hide the 3D geometry group
+      groupRef.current.visible = nowVisible;
+      // Fade the HTML label via direct DOM manipulation (no re-render needed)
+      if (htmlWrapperRef.current) {
+        htmlWrapperRef.current.style.opacity = nowVisible ? "1" : "0";
+        htmlWrapperRef.current.style.pointerEvents = nowVisible ? "auto" : "none";
+      }
+    }
+
+    // Animate scale when hovered/selected
+    if (nodeRef.current && nowVisible && (hovered || isSelected)) {
       const t = state.clock.getElapsedTime();
       const scale = 1 + Math.sin(t * 4) * 0.15;
       nodeRef.current.scale.set(scale, scale, scale);
+    } else if (nodeRef.current) {
+      nodeRef.current.scale.set(1, 1, 1);
     }
   });
 
   return (
-    <group position={position}>
+    <group ref={groupRef} position={position}>
       {/* Outer Pulse Glow Halo Ring */}
       <mesh ref={nodeRef}>
         <sphereGeometry args={[hovered || isSelected ? 0.2 : 0.13, 24, 24]} />
@@ -38,13 +73,14 @@ function DynamicClubNode({ club, position, onSelect, isSelected }) {
           wireframe={!hovered && !isSelected}
           transparent
           opacity={hovered || isSelected ? 0.75 : 0.35}
+          depthTest={true}
         />
       </mesh>
 
       {/* Inner Glowing Core */}
       <mesh>
         <sphereGeometry args={[0.07, 16, 16]} />
-        <meshBasicMaterial color={hovered || isSelected ? "#ffffff" : "#e4e4e7"} />
+        <meshBasicMaterial color={hovered || isSelected ? "#ffffff" : "#e4e4e7"} depthTest={true} />
       </mesh>
 
       {/* Click / Hover Raycast Hitbox */}
@@ -67,37 +103,44 @@ function DynamicClubNode({ club, position, onSelect, isSelected }) {
         <meshBasicMaterial transparent opacity={0} />
       </mesh>
 
-      {/* Futuristic Floating HUD Label */}
+      {/* Futuristic Floating HUD Label — hidden via ref when behind globe */}
       <Html
         position={[0.25, 0.25, 0]}
         center
         distanceFactor={8}
         zIndexRange={[15, 0]}
+        occlude="blending"
       >
+        {/* Wrapper with ref for direct DOM opacity control — avoids React re-renders */}
         <div
-          onClick={(e) => {
-            e.stopPropagation();
-            onSelect(club);
-          }}
-          className={`group/node cursor-pointer transition-all duration-300 px-3.5 py-1.5 rounded-full border backdrop-blur-xl flex items-center gap-2 select-none shadow-2xl ${
-            hovered || isSelected
-              ? "bg-white text-black border-white scale-110 font-bold shadow-[0_0_20px_rgba(255,255,255,0.4)]"
-              : "bg-black/85 text-zinc-300 border-white/20 hover:border-white/60 hover:text-white text-xs"
-          }`}
+          ref={htmlWrapperRef}
+          style={{ opacity: 1, transition: "opacity 0.25s ease", pointerEvents: "auto" }}
         >
-          <span
-            className={`w-2 h-2 rounded-full ${
-              hovered || isSelected ? "bg-black animate-ping" : "bg-white animate-pulse"
+          <div
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(club);
+            }}
+            className={`group/node cursor-pointer transition-all duration-300 px-3.5 py-1.5 rounded-full border backdrop-blur-xl flex items-center gap-2 select-none shadow-2xl ${
+              hovered || isSelected
+                ? "bg-white text-black border-white scale-110 font-bold shadow-[0_0_20px_rgba(255,255,255,0.4)]"
+                : "bg-black/85 text-zinc-300 border-white/20 hover:border-white/60 hover:text-white text-xs"
             }`}
-          />
-          <span className="whitespace-nowrap font-medium tracking-wide text-xs">
-            {club.name}
-          </span>
-          <ArrowUpRight
-            className={`w-3 h-3 opacity-0 group-hover/node:opacity-100 transition-opacity ${
-              hovered || isSelected ? "opacity-100 text-black" : "text-zinc-400"
-            }`}
-          />
+          >
+            <span
+              className={`w-2 h-2 rounded-full ${
+                hovered || isSelected ? "bg-black animate-ping" : "bg-white animate-pulse"
+              }`}
+            />
+            <span className="whitespace-nowrap font-medium tracking-wide text-xs">
+              {club.name}
+            </span>
+            <ArrowUpRight
+              className={`w-3 h-3 opacity-0 group-hover/node:opacity-100 transition-opacity ${
+                hovered || isSelected ? "opacity-100 text-black" : "text-zinc-400"
+              }`}
+            />
+          </div>
         </div>
       </Html>
     </group>
