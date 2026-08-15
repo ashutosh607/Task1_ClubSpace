@@ -58,6 +58,31 @@ const createEvent = async (req, res) => {
   }
 };
 
+const updateEvent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, club, category, date, venue, capacity, status, description, image } = req.body;
+
+    const updatedEvent = await Event.findByIdAndUpdate(
+      id,
+      { title, club, category, date, venue, capacity: Number(capacity), status, description, image },
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedEvent) {
+      return res.status(404).json({ success: false, message: "Event not found." });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Event updated successfully!",
+      event: updatedEvent,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 const deleteEvent = async (req, res) => {
   try {
     const { id } = req.params;
@@ -141,6 +166,7 @@ const updateRegistrationStatus = async (req, res) => {
 module.exports = {
   getEvents,
   createEvent,
+  updateEvent,
   deleteEvent,
   getClubs,
   createClub,

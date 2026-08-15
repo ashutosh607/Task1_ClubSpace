@@ -60,6 +60,22 @@ export const deleteAdminEvent = createAsyncThunk(
   }
 );
 
+export const updateAdminEvent = createAsyncThunk(
+  "admin/updateAdminEvent",
+  async ({ id, ...eventData }, { rejectWithValue }) => {
+    try {
+      const response = await axios.put(`${API_URL}/events/${id}`, eventData, {
+        withCredentials: true,
+      });
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to update event."
+      );
+    }
+  }
+);
+
 // Clubs Thunks
 export const fetchAdminClubs = createAsyncThunk(
   "admin/fetchAdminClubs",
@@ -149,6 +165,13 @@ const adminSlice = createSlice({
       .addCase(addAdminEvent.fulfilled, (state, action) => {
         if (action.payload?.event) {
           state.events.unshift(action.payload.event);
+        }
+      })
+      .addCase(updateAdminEvent.fulfilled, (state, action) => {
+        const updated = action.payload?.event;
+        if (updated) {
+          const idx = state.events.findIndex((e) => e._id === updated._id);
+          if (idx !== -1) state.events[idx] = updated;
         }
       })
       .addCase(deleteAdminEvent.fulfilled, (state, action) => {

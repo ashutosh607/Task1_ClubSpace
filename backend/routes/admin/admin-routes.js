@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getEvents,
   createEvent,
+  updateEvent,
   deleteEvent,
   getClubs,
   createClub,
@@ -15,6 +16,7 @@ const router = express.Router();
 // Events
 router.get("/events", authMiddleware, getEvents);
 router.post("/events", authMiddleware, createEvent);
+router.put("/events/:id", authMiddleware, updateEvent);
 router.delete("/events/:id", authMiddleware, deleteEvent);
 
 // Clubs

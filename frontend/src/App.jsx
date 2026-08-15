@@ -26,11 +26,11 @@ function App() {
       <div className="relative min-h-screen bg-[#090a0f] flex flex-col items-center justify-center text-white">
         <SpaceBackground />
         <div className="relative z-10 flex flex-col items-center gap-4">
-          <div className="p-4 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 animate-pulse">
+          <div className="p-4 rounded-2xl bg-white/10 border border-white/30 text-white animate-pulse">
             <Rocket className="w-8 h-8 animate-bounce" />
           </div>
-          <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400 uppercase">
-            <Loader2 className="w-4 h-4 animate-spin text-cyan-400" />
+          <div className="flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-300 uppercase">
+            <Loader2 className="w-4 h-4 animate-spin text-white" />
             Initializing Space Terminal...
           </div>
         </div>

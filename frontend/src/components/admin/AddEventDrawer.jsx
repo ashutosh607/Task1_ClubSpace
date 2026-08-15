@@ -1,19 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addAdminEvent, fetchAdminClubs } from "../../store/admin-slice";
+import { addAdminEvent, fetchAdminClubs, updateAdminEvent } from "../../store/admin-slice";
 import { fetchPublicClubs } from "../../store/user-slice";
-import { X, Loader2, Orbit, Upload, Image, Trash2, AlertCircle } from "lucide-react";
+import { X, Loader2, Orbit, Upload, Trash2, AlertCircle, Pencil } from "lucide-react";
 
-const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub }) => {
+const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub, editEvent }) => {
   const dispatch = useDispatch();
   const [loading, setLoading] = useState(false);
+  const isEditMode = !!editEvent;
 
   // Retrieve clubs from Redux store
   const { clubs: adminClubs } = useSelector((state) => state.admin || { clubs: [] });
   const { clubs: userClubs } = useSelector((state) => state.user || { clubs: [] });
   const clubs = adminClubs && adminClubs.length > 0 ? adminClubs : userClubs || [];
 
-  const [formData, setFormData] = useState({
+  const emptyForm = {
     title: "",
     club: "",
     category: "Technical",
@@ -23,14 +24,32 @@ const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub }) => {
     status: "Open",
     description: "",
     image: "",
-  });
+  };
+
+  const [formData, setFormData] = useState(emptyForm);
 
   useEffect(() => {
     if (isOpen) {
       dispatch(fetchAdminClubs());
       dispatch(fetchPublicClubs());
+      // Pre-fill form when editing
+      if (editEvent) {
+        setFormData({
+          title: editEvent.title || "",
+          club: editEvent.club || "",
+          category: editEvent.category || "Technical",
+          date: editEvent.date || "",
+          venue: editEvent.venue || "",
+          capacity: editEvent.capacity || 50,
+          status: editEvent.status || "Open",
+          description: editEvent.description || "",
+          image: editEvent.image || "",
+        });
+      } else {
+        setFormData(emptyForm);
+      }
     }
-  }, [isOpen, dispatch]);
+  }, [isOpen, editEvent, dispatch]);
 
   // When clubs are loaded, set default club if none selected
   useEffect(() => {
@@ -96,23 +115,17 @@ const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub }) => {
 
     setLoading(true);
     try {
-      await dispatch(addAdminEvent(formData)).unwrap();
+      if (isEditMode) {
+        await dispatch(updateAdminEvent({ id: editEvent._id, ...formData })).unwrap();
+      } else {
+        await dispatch(addAdminEvent(formData)).unwrap();
+      }
       setLoading(false);
-      setFormData({
-        title: "",
-        club: clubs[0]?.name || "",
-        category: "Technical",
-        date: "",
-        venue: "",
-        capacity: 50,
-        status: "Open",
-        description: "",
-        image: "",
-      });
+      setFormData(emptyForm);
       onClose();
     } catch (err) {
       setLoading(false);
-      alert(err || "Failed to create event");
+      alert(err || (isEditMode ? "Failed to update event" : "Failed to create event"));
     }
   };
 
@@ -138,10 +151,12 @@ const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub }) => {
                 </div>
                 <div>
                   <h2 className="text-lg font-bold tracking-tight text-white">
-                    Create New Event
+                    {isEditMode ? "Edit Event" : "Create New Event"}
                   </h2>
                   <p className="text-xs text-zinc-400">
-                    Publish a mission for a registered campus club.
+                    {isEditMode
+                      ? "Update event details and status."
+                      : "Publish a mission for a registered campus club."}
                   </p>
                 </div>
               </div>
@@ -395,10 +410,11 @@ const AddEventDrawer = ({ isOpen, onClose, onOpenAddClub }) => {
             >
               {loading ? (
                 <>
-                  <Loader2 className="w-4 h-4 animate-spin" /> Publishing...
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  {isEditMode ? "Saving..." : "Publishing..."}
                 </>
               ) : (
-                "Publish Event"
+                isEditMode ? "Save Changes" : "Publish Event"
               )}
             </button>
           </div>

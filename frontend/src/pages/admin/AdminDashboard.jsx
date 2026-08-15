@@ -22,6 +22,7 @@ import {
   ShieldCheck,
   CheckCircle2,
   Inbox,
+  Pencil,
 } from "lucide-react";
 import ThreeSpaceBackground from "../../components/common/ThreeSpaceBackground";
 import AddEventDrawer from "../../components/admin/AddEventDrawer";
@@ -35,6 +36,7 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard"); // 'dashboard' | 'events' | 'clubs' | 'registrations'
   const [isEventDrawerOpen, setIsEventDrawerOpen] = useState(false);
   const [isClubDrawerOpen, setIsClubDrawerOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
 
   // Search & Filter States
   const [eventSearch, setEventSearch] = useState("");
@@ -108,8 +110,9 @@ const AdminDashboard = () => {
       {/* Slide-over Event Drawer */}
       <AddEventDrawer
         isOpen={isEventDrawerOpen}
-        onClose={() => setIsEventDrawerOpen(false)}
+        onClose={() => { setIsEventDrawerOpen(false); setEditingEvent(null); }}
         onOpenAddClub={() => setIsClubDrawerOpen(true)}
+        editEvent={editingEvent}
       />
 
       {/* Slide-over Club Drawer */}
@@ -509,13 +512,22 @@ const AdminDashboard = () => {
                             </span>
                           </td>
                           <td className="py-4 px-4 text-right">
-                            <button
-                              onClick={() => handleDeleteEvent(evt._id)}
-                              className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-all"
-                              title="Delete Event"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => { setEditingEvent(evt); setIsEventDrawerOpen(true); }}
+                                className="p-2 rounded-xl bg-white/5 hover:bg-white/15 text-white border border-white/10 transition-all"
+                                title="Edit Event"
+                              >
+                                <Pencil className="w-3.5 h-3.5" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteEvent(evt._id)}
+                                className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 text-white hover:text-red-400 border border-white/10 transition-all"
+                                title="Delete Event"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       ))}
