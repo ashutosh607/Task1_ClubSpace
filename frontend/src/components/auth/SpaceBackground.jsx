@@ -20,30 +20,43 @@ const SpaceBackground = () => {
     };
     window.addEventListener("resize", handleResize);
 
-    // Create Stars - Monochromatic White/Grey palette only
-    const starCount = Math.floor((width * height) / 3500);
+    // Multi-depth Star layers
+    const starCount = Math.min(Math.floor((width * height) / 2800), 450);
     const stars = Array.from({ length: starCount }, () => ({
       x: Math.random() * width,
       y: Math.random() * height,
-      size: Math.random() * 1.5 + 0.3,
-      alpha: Math.random(),
-      speed: Math.random() * 0.015 + 0.005,
+      size: Math.random() * 1.6 + 0.3,
+      alpha: Math.random() * 0.8 + 0.2,
+      speed: Math.random() * 0.012 + 0.004,
       twinkleDir: Math.random() > 0.5 ? 1 : -1,
       color:
-        Math.random() > 0.8
-          ? "#e4e4e7" // Light zinc/grey
-          : Math.random() > 0.6
-          ? "#d4d4d8" // Neutral zinc
-          : "#ffffff", // Pure white
+        Math.random() > 0.85
+          ? "#e4e4e7"
+          : Math.random() > 0.65
+          ? "#d4d4d8"
+          : Math.random() > 0.4
+          ? "#ffffff"
+          : "#a1a1aa",
     }));
 
-    // Shooting Stars system - Pure White Glow
+    // Floating subtle cosmic dust particles
+    const dustCount = 35;
+    const dustParticles = Array.from({ length: dustCount }, () => ({
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      size: Math.random() * 2 + 1,
+      alpha: Math.random() * 0.3 + 0.1,
+    }));
+
+    // Shooting Stars system
     const shootingStars = [];
     const createShootingStar = () => {
-      const startX = Math.random() * (width * 1.2) - width * 0.1;
-      const startY = Math.random() * (height * 0.5);
-      const length = Math.random() * 80 + 60;
-      const speed = Math.random() * 6 + 4;
+      const startX = Math.random() * (width * 1.3) - width * 0.15;
+      const startY = Math.random() * (height * 0.4);
+      const length = Math.random() * 110 + 70;
+      const speed = Math.random() * 7 + 5;
       const angle = Math.PI / 4 + (Math.random() * 0.2 - 0.1);
 
       shootingStars.push({
@@ -54,38 +67,67 @@ const SpaceBackground = () => {
         dx: Math.cos(angle) * speed,
         dy: Math.sin(angle) * speed,
         life: 0,
-        maxLife: Math.random() * 40 + 30,
-        size: Math.random() * 1.2 + 1,
+        maxLife: Math.random() * 45 + 30,
+        size: Math.random() * 1.4 + 1,
       });
     };
 
     let spawnTimer = 0;
 
     const render = () => {
-      // Clear with pitch black background
-      ctx.fillStyle = "#09090b";
+      // Clear with pitch black deep cosmic tone
+      ctx.fillStyle = "#050508";
       ctx.fillRect(0, 0, width, height);
 
-      // Subtle monochromatic radial glow
+      // Deep space nebula radial ambient glows
       const g1 = ctx.createRadialGradient(
         width * 0.5,
-        height * 0.3,
-        10,
+        height * 0.2,
+        20,
         width * 0.5,
-        height * 0.3,
-        width * 0.6
+        height * 0.2,
+        width * 0.7
       );
-      g1.addColorStop(0, "rgba(255, 255, 255, 0.04)");
-      g1.addColorStop(0.6, "rgba(24, 24, 27, 0.02)");
-      g1.addColorStop(1, "rgba(9, 9, 11, 0)");
+      g1.addColorStop(0, "rgba(255, 255, 255, 0.035)");
+      g1.addColorStop(0.5, "rgba(39, 39, 42, 0.015)");
+      g1.addColorStop(1, "rgba(5, 5, 8, 0)");
       ctx.fillStyle = g1;
       ctx.fillRect(0, 0, width, height);
 
-      // Draw twinkling white stars
+      // Lower subtle nebula glow
+      const g2 = ctx.createRadialGradient(
+        width * 0.2,
+        height * 0.75,
+        10,
+        width * 0.2,
+        height * 0.75,
+        width * 0.5
+      );
+      g2.addColorStop(0, "rgba(255, 255, 255, 0.02)");
+      g2.addColorStop(1, "rgba(5, 5, 8, 0)");
+      ctx.fillStyle = g2;
+      ctx.fillRect(0, 0, width, height);
+
+      // Render cosmic dust particles
+      dustParticles.forEach((p) => {
+        p.x += p.vx;
+        p.y += p.vy;
+        if (p.x < 0) p.x = width;
+        if (p.x > width) p.x = 0;
+        if (p.y < 0) p.y = height;
+        if (p.y > height) p.y = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+        ctx.fill();
+      });
+
+      // Render twinkling white stars
       stars.forEach((star) => {
         star.alpha += star.speed * star.twinkleDir;
-        if (star.alpha >= 1) {
-          star.alpha = 1;
+        if (star.alpha >= 0.95) {
+          star.alpha = 0.95;
           star.twinkleDir = -1;
         } else if (star.alpha <= 0.15) {
           star.alpha = 0.15;
@@ -100,9 +142,9 @@ const SpaceBackground = () => {
         ctx.globalAlpha = 1;
       });
 
-      // Spawn shooting star
+      // Spawn shooting stars periodically
       spawnTimer++;
-      if (spawnTimer > 120 && Math.random() < 0.03) {
+      if (spawnTimer > 100 && Math.random() < 0.035) {
         createShootingStar();
         spawnTimer = 0;
       }
@@ -122,7 +164,7 @@ const SpaceBackground = () => {
 
         const grad = ctx.createLinearGradient(tailX, tailY, ss.x, ss.y);
         grad.addColorStop(0, "rgba(255, 255, 255, 0)");
-        grad.addColorStop(0.7, `rgba(255, 255, 255, ${alpha * 0.4})`);
+        grad.addColorStop(0.7, `rgba(255, 255, 255, ${alpha * 0.45})`);
         grad.addColorStop(1, `rgba(255, 255, 255, ${alpha})`);
 
         ctx.beginPath();
@@ -137,11 +179,11 @@ const SpaceBackground = () => {
         ctx.arc(ss.x, ss.y, ss.size * 1.2, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
         ctx.shadowColor = "#ffffff";
-        ctx.shadowBlur = 6;
+        ctx.shadowBlur = 8;
         ctx.fill();
         ctx.shadowBlur = 0;
 
-        if (ss.life >= ss.maxLife || ss.x > width + 100 || ss.y > height + 100) {
+        if (ss.life >= ss.maxLife || ss.x > width + 120 || ss.y > height + 120) {
           shootingStars.splice(i, 1);
         }
       }
@@ -166,3 +208,4 @@ const SpaceBackground = () => {
 };
 
 export default SpaceBackground;
+
