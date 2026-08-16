@@ -96,15 +96,14 @@ const loginUser = async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // Set true in production with HTTPS
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      secure: true,
+      sameSite: "none",
+      maxAge: 24 * 60 * 60 * 1000,
+      path: "/",
     });
-
     return res.status(200).json({
       success: true,
       message: "Logged in successfully!",
-      token, // Return token for flexible client-side storage if needed
       user: {
         id: checkUser._id,
         email: checkUser.email,
@@ -125,15 +124,16 @@ const loginUser = async (req, res) => {
 const logoutUser = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    secure: false,
-    sameSite: "lax",
+    secure: true,
+    sameSite: "none",
+    path: "/",
   });
+
   return res.status(200).json({
     success: true,
     message: "Logged out successfully!",
   });
 };
-
 // Auth Middleware
 const authMiddleware = async (req, res, next) => {
   const token =
