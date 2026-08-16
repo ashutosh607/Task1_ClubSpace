@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/auth";
+const API_URL = `${process.env.VITE_API_URL}/api/auth`;
 
 const initialState = {
   isAuthenticated: false,
@@ -11,7 +11,7 @@ const initialState = {
 };
 
 export const registerUser = createAsyncThunk(
-  "auth/registerUser",
+  "auth/register",
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/register`, formData, {
@@ -27,7 +27,7 @@ export const registerUser = createAsyncThunk(
 );
 
 export const loginUser = createAsyncThunk(
-  "auth/loginUser",
+  "auth/login",
   async (formData, { rejectWithValue }) => {
     try {
       const response = await axios.post(`${API_URL}/login`, formData, {
@@ -43,7 +43,7 @@ export const loginUser = createAsyncThunk(
 );
 
 export const logoutUser = createAsyncThunk(
-  "auth/logoutUser",
+  "auth/logout",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.post(
@@ -63,7 +63,7 @@ export const logoutUser = createAsyncThunk(
 );
 
 export const checkAuthUser = createAsyncThunk(
-  "auth/checkAuthUser",
+  "auth/checkAuth",
   async (_, { rejectWithValue }) => {
     try {
       const response = await axios.get(`${API_URL}/check-auth`, {

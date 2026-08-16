@@ -1,7 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const API_URL = "http://localhost:5000/api/user";
+const API_URL = `${process.env.VITE_API_URL}/api/user`;
 
 const initialState = {
   clubs: [],
