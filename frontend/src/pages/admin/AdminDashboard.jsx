@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link } from "react-router-dom";
 import { logoutUser } from "../../store/auth-slice";
 import {
   fetchAdminEvents,
@@ -23,6 +24,7 @@ import {
   CheckCircle2,
   Inbox,
   Pencil,
+  Globe,
 } from "lucide-react";
 import ThreeSpaceBackground from "../../components/common/ThreeSpaceBackground";
 import AddEventDrawer from "../../components/admin/AddEventDrawer";
@@ -188,6 +190,14 @@ const AdminDashboard = () => {
               <FileText className="w-4 h-4" />
               Registrations
             </button>
+
+            <Link
+              to="/"
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-xs font-semibold text-cyan-300 hover:text-white hover:bg-cyan-500/10 border border-cyan-500/20 transition-all duration-200 mt-2 cursor-pointer"
+            >
+              <Globe className="w-4 h-4 text-cyan-400" />
+              <span>View Live Website</span>
+            </Link>
           </nav>
         </div>
 

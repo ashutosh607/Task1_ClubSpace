@@ -40,11 +40,9 @@ function App() {
 
   return (
     <Routes>
-      {/* Root check */}
-      <Route
-        path="/"
-        element={<CheckAuth isAuthenticated={isAuthenticated} user={user} />}
-      />
+      {/* Public Main Website */}
+      <Route path="/" element={<UserHome />} />
+      <Route path="/user/home" element={<UserHome />} />
 
       {/* Auth routes */}
       <Route
@@ -58,16 +56,6 @@ function App() {
         <Route path="login" element={<Login />} />
         <Route path="register" element={<Register />} />
       </Route>
-
-      {/* User protected routes */}
-      <Route
-        path="/user/home"
-        element={
-          <CheckAuth isAuthenticated={isAuthenticated} user={user}>
-            <UserHome />
-          </CheckAuth>
-        }
-      />
 
       {/* Admin protected routes */}
       <Route

@@ -1,6 +1,8 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { Link, useNavigate } from "react-router-dom";
 import { fetchPublicClubs, fetchPublicEvents } from "../../store/user-slice";
+import { logoutUser } from "../../store/auth-slice";
 import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import {
   Orbit,
@@ -28,6 +30,11 @@ import {
   Share2,
   Layers,
   ArrowUp,
+  LogIn,
+  LogOut,
+  LayoutDashboard,
+  Lock,
+  X,
 } from "lucide-react";
 
 import SpaceBackground from "../../components/auth/SpaceBackground";
@@ -51,7 +58,8 @@ const getCategoryIcon = (category = "") => {
 
 export default function UserHome() {
   const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+  const navigate = useNavigate();
+  const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { clubs: userClubs, events: userEvents, isLoading } = useSelector(
     (state) => state.user
   );
@@ -74,6 +82,7 @@ export default function UserHome() {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isAddClubOpen, setIsAddClubOpen] = useState(false);
   const [isAddEventOpen, setIsAddEventOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Filter States
   const [clubCategory, setClubCategory] = useState("All Clubs");
@@ -152,6 +161,14 @@ export default function UserHome() {
     });
   }, [events, eventSearch, eventCategoryFilter]);
 
+  const handleEventRSVP = (evt) => {
+    if (!isAuthenticated) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    setSelectedEvent(evt);
+  };
+
   const scrollToSection = (id) => {
     const el = document.getElementById(id);
     if (el) {
@@ -218,34 +235,73 @@ export default function UserHome() {
             ))}
           </nav>
 
-          {/* Right Action Buttons */}
-          <div className="flex items-center gap-3">
-            {user?.role === "admin" && (
-              <button
-                onClick={() => setIsAddClubOpen(true)}
-                className="hidden sm:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" /> Add Club
-              </button>
-            )}
+          {/* Right Action Buttons: Show Login / Signup when unauthenticated, Profile / Admin when logged in */}
+          <div className="flex items-center gap-2 sm:gap-3">
+            {!isAuthenticated ? (
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                <Link
+                  to="/auth/login"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-semibold text-zinc-300 hover:text-white hover:bg-white/10 border border-white/15 transition-all shadow-sm active:scale-95 flex items-center gap-1.5 cursor-pointer backdrop-blur-md"
+                >
+                  <LogIn className="w-3.5 h-3.5 text-zinc-400 group-hover:text-white" />
+                  <span>Log In</span>
+                </Link>
+                <Link
+                  to="/auth/register"
+                  className="px-3.5 sm:px-4 py-2 rounded-xl text-xs font-bold text-black bg-white hover:bg-zinc-200 shadow-md shadow-white/10 transition-all active:scale-95 flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Sparkles className="w-3.5 h-3.5 text-black" />
+                  <span>Sign Up</span>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 sm:gap-2.5">
+                {user?.role === "admin" && (
+                  <>
+                    <button
+                      onClick={() => navigate("/admin/dashboard")}
+                      className="hidden sm:inline-flex items-center gap-1.5 bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-300 text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                    >
+                      <LayoutDashboard className="w-3.5 h-3.5 text-cyan-400" />
+                      <span>Admin Desk</span>
+                    </button>
+                    <button
+                      onClick={() => setIsAddClubOpen(true)}
+                      className="hidden md:inline-flex items-center gap-1.5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-bold px-3.5 py-2 rounded-xl transition-all shadow-md active:scale-95 cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Club</span>
+                    </button>
+                  </>
+                )}
 
-            <button
-              onClick={() => setIsProfileOpen(true)}
-              className="group flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-2xl p-1.5 pr-3.5 transition-all cursor-pointer shadow-lg"
-              title="Open User Flight Profile"
-            >
-              <div className="w-8 h-8 rounded-xl bg-white text-black font-bold flex items-center justify-center text-xs shadow-md">
-                {user?.userName ? user.userName.charAt(0).toUpperCase() : "U"}
+                <button
+                  onClick={() => setIsProfileOpen(true)}
+                  className="group flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/20 rounded-2xl p-1.5 pr-3.5 transition-all cursor-pointer shadow-lg"
+                  title="Open User Flight Profile"
+                >
+                  <div className="w-8 h-8 rounded-xl bg-white text-black font-bold flex items-center justify-center text-xs shadow-md">
+                    {user?.userName ? user.userName.charAt(0).toUpperCase() : "U"}
+                  </div>
+                  <div className="text-left hidden sm:block">
+                    <span className="block text-xs font-semibold text-white group-hover:text-zinc-200">
+                      {user?.userName || "Cadet"}
+                    </span>
+                    <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-mono">
+                      {user?.role || "Student"}
+                    </span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => dispatch(logoutUser())}
+                  className="p-2 rounded-xl bg-white/5 hover:bg-red-500/20 border border-white/10 hover:border-red-500/30 text-zinc-400 hover:text-red-400 transition-all cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
               </div>
-              <div className="text-left hidden sm:block">
-                <span className="block text-xs font-semibold text-white group-hover:text-zinc-200">
-                  {user?.userName || "Cadet"}
-                </span>
-                <span className="block text-[9px] uppercase tracking-wider text-zinc-500 font-mono">
-                  {user?.role || "Student"}
-                </span>
-              </div>
-            </button>
+            )}
           </div>
 
         </div>
@@ -798,7 +854,7 @@ export default function UserHome() {
 
                   <div className="p-6 pt-0">
                     <button
-                      onClick={() => setSelectedEvent(evt)}
+                      onClick={() => handleEventRSVP(evt)}
                       className="w-full bg-white/10 hover:bg-white text-white hover:text-black border border-white/20 py-3.5 rounded-2xl text-xs font-bold tracking-wider transition-all duration-200 uppercase flex items-center justify-center gap-2 cursor-pointer shadow-lg active:scale-95"
                     >
                       <span>RSVP & GET PASS</span>
@@ -884,10 +940,24 @@ export default function UserHome() {
             </div>
 
             <button
-              onClick={() => setIsProfileOpen(true)}
+              onClick={() => {
+                if (isAuthenticated) {
+                  setIsProfileOpen(true);
+                } else {
+                  setIsAuthModalOpen(true);
+                }
+              }}
               className="w-full bg-white hover:bg-zinc-200 text-black font-bold text-xs py-3.5 rounded-2xl transition-all shadow-lg active:scale-95 cursor-pointer flex items-center justify-center gap-2"
             >
-              <User className="w-4 h-4" /> View My Flight Log & Registrations
+              {isAuthenticated ? (
+                <>
+                  <User className="w-4 h-4" /> View My Flight Log & Registrations
+                </>
+              ) : (
+                <>
+                  <LogIn className="w-4 h-4" /> Sign In to Access Flight Log
+                </>
+              )}
             </button>
           </motion.div>
 
@@ -964,18 +1034,79 @@ export default function UserHome() {
             club={selectedClub}
             events={events}
             onClose={() => setSelectedClub(null)}
-            onSelectEvent={(evt) => setSelectedEvent(evt)}
+            onSelectEvent={(evt) => handleEventRSVP(evt)}
           />
         )}
       </AnimatePresence>
 
-      {/* 3. User Profile & Registration History Drawer */}
+      {/* 3. Authentication Required Modal */}
+      <AnimatePresence>
+        {isAuthModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto animate-fade-in">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              className="relative w-full max-w-md bg-[#0d0e15]/95 border border-white/20 rounded-3xl p-6 sm:p-8 text-white shadow-2xl backdrop-blur-2xl"
+            >
+              <button
+                onClick={() => setIsAuthModalOpen(false)}
+                className="absolute top-4 right-4 p-2 rounded-xl bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white transition-all cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+
+              <div className="text-center space-y-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/10 border border-white/20 text-white flex items-center justify-center mx-auto shadow-xl">
+                  <Lock className="w-7 h-7 text-white" />
+                </div>
+
+                <div>
+                  <h3 className="text-xl font-bold tracking-tight text-white">
+                    Authentication Required
+                  </h3>
+                  <p className="text-xs text-zinc-400 mt-2 leading-relaxed">
+                    Please log in or create your campus account to register for missions, RSVP, and generate your digital verified entry pass.
+                  </p>
+                </div>
+
+                <div className="space-y-2.5 pt-2">
+                  <Link
+                    to="/auth/login"
+                    className="w-full flex items-center justify-center gap-2 bg-white hover:bg-zinc-200 text-black font-bold text-xs py-3.5 rounded-xl transition-all shadow-lg active:scale-95 cursor-pointer"
+                  >
+                    <LogIn className="w-4 h-4" />
+                    <span>Log In to Account</span>
+                  </Link>
+
+                  <Link
+                    to="/auth/register"
+                    className="w-full flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-bold text-xs py-3.5 rounded-xl transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Create New Account</span>
+                  </Link>
+
+                  <button
+                    onClick={() => setIsAuthModalOpen(false)}
+                    className="w-full text-xs text-zinc-500 hover:text-zinc-300 py-1 transition-colors cursor-pointer"
+                  >
+                    Continue browsing website as guest
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* 4. User Profile & Registration History Drawer */}
       <UserProfileDrawer
         isOpen={isProfileOpen}
         onClose={() => setIsProfileOpen(false)}
       />
 
-      {/* 4. Admin Add Club Drawer */}
+      {/* 5. Admin Add Club Drawer */}
       <AddClubDrawer
         isOpen={isAddClubOpen}
         onClose={() => {
@@ -984,7 +1115,7 @@ export default function UserHome() {
         }}
       />
 
-      {/* 5. Admin Add Event Drawer */}
+      {/* 6. Admin Add Event Drawer */}
       <AddEventDrawer
         isOpen={isAddEventOpen}
         onClose={() => {
